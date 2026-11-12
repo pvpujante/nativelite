@@ -25,6 +25,7 @@
         <span>Ajustes</span>
       </button>
     </header>
+    <p class="google-mode-notice" id="googleModeNotice" hidden>Modo Google activo · vista de buscador de letbethub</p>
 
     <main id="inicio">
       <section class="hero-wrap" aria-labelledby="heroTitle">
@@ -89,6 +90,10 @@
             <option value="light">Clara</option>
             <option value="system">Del sistema</option>
           </select>
+        </label>
+        <label class="setting-row mode-setting" for="googleModeToggle">
+          <span><strong>Modo Google</strong><small>Activa una vista clara de buscador. El título y el icono seguirán identificando a letbethub.</small></span>
+          <input class="mode-toggle" id="googleModeToggle" type="checkbox" role="switch" aria-checked="false" />
         </label>
         <p class="settings-saved" id="settingsSaved" role="status">Tus preferencias se guardan automáticamente en este dispositivo.</p>
       </form>

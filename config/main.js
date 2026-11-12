@@ -9,6 +9,8 @@ const catalogCount = document.getElementById("catalogCount");
 const filterTabs = document.getElementById("filterTabs");
 const settingsDialog = document.getElementById("settingsDialog");
 const themeSelect = document.getElementById("themeSelect");
+const googleModeToggle = document.getElementById("googleModeToggle");
+const googleModeNotice = document.getElementById("googleModeNotice");
 let gamesData = [];
 let activeFilter = "all";
 
@@ -25,22 +27,41 @@ function applyTheme(theme) {
   themeSelect.value = theme;
 }
 
-function saveTheme(theme) {
-  applyTheme(theme);
+function savePreferences(updates, confirmation) {
   try {
-    localStorage.setItem(storageKey, JSON.stringify({ theme }));
-    document.getElementById("settingsSaved").textContent = "Apariencia guardada en este dispositivo.";
+    localStorage.setItem(storageKey, JSON.stringify({ ...readPreferences(), ...updates }));
+    document.getElementById("settingsSaved").textContent = confirmation;
   } catch {
     document.getElementById("settingsSaved").textContent = "No se pudo guardar la preferencia en este navegador.";
   }
 }
 
-applyTheme(readPreferences().theme || "dark");
+function saveTheme(theme) {
+  applyTheme(theme);
+  savePreferences({ theme }, "Apariencia guardada en este dispositivo.");
+}
+
+function applyGoogleMode(enabled) {
+  document.documentElement.dataset.viewMode = enabled ? "google" : "default";
+  googleModeToggle.checked = enabled;
+  googleModeToggle.setAttribute("aria-checked", String(enabled));
+  googleModeNotice.hidden = !enabled;
+}
+
+function saveGoogleMode(enabled) {
+  applyGoogleMode(enabled);
+  savePreferences({ googleMode: enabled }, enabled ? "Modo Google guardado en este dispositivo." : "Modo Google desactivado.");
+}
+
+const preferences = readPreferences();
+applyTheme(preferences.theme || "dark");
+applyGoogleMode(preferences.googleMode === true);
 
 document.title = "letbethub — juegos para jugar";
 
 document.getElementById("openSettings").addEventListener("click", () => settingsDialog.showModal());
 themeSelect.addEventListener("change", (event) => saveTheme(event.target.value));
+googleModeToggle.addEventListener("change", (event) => saveGoogleMode(event.target.checked));
 settingsDialog.addEventListener("click", (event) => {
   if (event.target === settingsDialog) settingsDialog.close();
 });
