@@ -1,25 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
+    <meta name="theme-color" content="#101820" />
+    <meta name="description" content="letbethub: descubre y juega tus juegos web favoritos." />
+    <title>letbethub — juegos para jugar</title>
     <link rel="stylesheet" href="config/main.css" />
     <script src="config/main.js" type="module"></script>
   </head>
   <body>
-    <div class="center">
-      <h1 id="title"></h1>
-      <p id="subtitle"></p>
-    </div>
-    <div class="center">
-      <input type="text" id="searchInput" placeholder="Search games" />
-    </div>
-    <div id="gamesContainer"></div>
-    <div class="footer">
-      <a style="font-weight: 700">a site by
-      </a><a style="font-weight: 700" class="link" href="https://dsc.gg/parcoil">parcoil network</a>
-    </div>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="letbethub, inicio">
+        <span class="brand-mark" aria-hidden="true">l<span>h</span></span>
+        <span>letbet<span class="brand-accent">hub</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="nav-link is-current" href="#inicio">Inicio</a>
+        <a class="nav-link" href="#catalogo">Explorar</a>
+      </nav>
+      <button class="settings-trigger" id="openSettings" type="button" aria-haspopup="dialog" aria-controls="settingsDialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8 4.7v-2.4l-2-.6a6.3 6.3 0 0 0-.6-1.4l1-1.8-1.7-1.7-1.8 1a6.3 6.3 0 0 0-1.4-.6l-.6-2h-2.4l-.6 2a6.3 6.3 0 0 0-1.4.6l-1.8-1L6 7l1 1.8a6.3 6.3 0 0 0-.6 1.4l-2 .6v2.4l2 .6a6.3 6.3 0 0 0 .6 1.4L6 17l1.7 1.7 1.8-1a6.3 6.3 0 0 0 1.4.6l.6 2h2.4l.6-2a6.3 6.3 0 0 0 1.4-.6l1.8 1 1.7-1.7-1-1.8a6.3 6.3 0 0 0 .6-1.4l2-.6Z"/></svg>
+        <span>Ajustes</span>
+      </button>
+    </header>
+
+    <main id="inicio">
+      <section class="hero-wrap" aria-labelledby="heroTitle">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Tu próxima partida empieza aquí</p>
+          <h1 id="heroTitle">Un buen juego.<br /><span>Justo a tiempo.</span></h1>
+          <p class="hero-description">Explora el catálogo, encuentra tu próximo favorito y vuelve a jugar cuando quieras.</p>
+          <a class="primary-button" id="featuredLink" href="#catalogo">
+            <span id="featuredButtonText">Explorar juegos</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <div class="hero-meta"><span class="meta-dot" aria-hidden="true"></span><span id="gameCount">Catálogo en actualización</span></div>
+        </div>
+        <a class="featured-card" id="featuredCard" href="#catalogo" aria-label="Juego destacado">
+          <img id="featuredImage" src="native.png" alt="" />
+          <span class="featured-overlay"></span>
+          <span class="featured-badge"><span aria-hidden="true">✦</span> Juego destacado</span>
+          <span class="featured-caption"><span class="featured-kicker">RECOMENDADO PARA TI</span><strong id="featuredName">Descubre el catálogo</strong></span>
+          <span class="featured-arrow" aria-hidden="true">↗</span>
+        </a>
+      </section>
+
+      <section class="catalog-section" id="catalogo" aria-labelledby="catalogTitle">
+        <div class="catalog-heading">
+          <div>
+            <p class="section-kicker">ELIGE TU PRÓXIMA PARTIDA</p>
+            <h2 id="catalogTitle">Explora los juegos</h2>
+          </div>
+          <p class="catalog-count" id="catalogCount" aria-live="polite"></p>
+        </div>
+        <div class="catalog-controls">
+          <div class="filter-tabs" id="filterTabs" role="group" aria-label="Filtrar juegos">
+            <button class="filter-tab is-active" type="button" data-filter="all" aria-pressed="true">Todos</button>
+            <button class="filter-tab" type="button" data-filter="new" aria-pressed="false">Nuevos</button>
+          </div>
+          <label class="search-box" for="searchInput">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+            <input type="search" id="searchInput" placeholder="Buscar un juego…" autocomplete="off" />
+            <span class="search-shortcut" aria-hidden="true">⌕</span>
+          </label>
+        </div>
+        <div id="gamesContainer" class="games-grid" aria-live="polite" aria-busy="true"></div>
+        <p class="empty-state" id="emptyState" hidden>No encontramos juegos con ese nombre. Prueba con otra búsqueda.</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="/" aria-label="letbethub, inicio"><span class="brand-mark" aria-hidden="true">l<span>h</span></span><span>letbet<span class="brand-accent">hub</span></span></a>
+      <p class="footer-note">Un catálogo hecho para encontrar tu siguiente juego favorito.</p>
+      <p class="footer-credit"><a href="https://dsc.gg/parcoil" target="_blank" rel="noopener noreferrer">a site by parcoil network</a></p>
+    </footer>
+
+    <dialog class="settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+      <form method="dialog" class="settings-panel">
+        <div class="dialog-heading">
+          <div><p class="section-kicker">PERSONALIZA TU EXPERIENCIA</p><h2 id="settingsTitle">Ajustes</h2></div>
+          <button class="icon-button" type="submit" aria-label="Cerrar ajustes">×</button>
+        </div>
+        <label class="setting-row" for="themeSelect">
+          <span><strong>Apariencia</strong><small>Elige cómo se ve letbethub en este dispositivo.</small></span>
+          <select id="themeSelect" name="theme">
+            <option value="dark">Oscura</option>
+            <option value="light">Clara</option>
+            <option value="system">Del sistema</option>
+          </select>
+        </label>
+        <p class="settings-saved" id="settingsSaved" role="status">Tus preferencias se guardan automáticamente en este dispositivo.</p>
+      </form>
+    </dialog>
   </body>
 </html>
-

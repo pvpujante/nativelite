@@ -1,72 +1,148 @@
-// This changes the title of your site
+import "./custom.js";
 
-var sitename = "native."; // Change this to change the name of your website.
-var subtext = "v1.2"; // set the subtext
+const gameServer = "https://gms.parcoil.com";
+const storageKey = "letbethub-preferences-v1";
+const gamesContainer = document.getElementById("gamesContainer");
+const searchInput = document.getElementById("searchInput");
+const emptyState = document.getElementById("emptyState");
+const catalogCount = document.getElementById("catalogCount");
+const filterTabs = document.getElementById("filterTabs");
+const settingsDialog = document.getElementById("settingsDialog");
+const themeSelect = document.getElementById("themeSelect");
+let gamesData = [];
+let activeFilter = "all";
 
-// more settings in main.css
+function readPreferences() {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey) || "{}");
+  } catch {
+    return {};
+  }
+}
 
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeSelect.value = theme;
+}
 
+function saveTheme(theme) {
+  applyTheme(theme);
+  try {
+    localStorage.setItem(storageKey, JSON.stringify({ theme }));
+    document.getElementById("settingsSaved").textContent = "Apariencia guardada en este dispositivo.";
+  } catch {
+    document.getElementById("settingsSaved").textContent = "No se pudo guardar la preferencia en este navegador.";
+  }
+}
 
-// END CONFIG
-// DO NOT MODIFY IF YOU DO NOT KNOW WHAT YOUR DOING!
+applyTheme(readPreferences().theme || "dark");
 
-import "/./config/custom.js";
+document.title = "letbethub — juegos para jugar";
 
-var serverUrl1 = "https://gms.parcoil.com";
-var currentPageTitle = document.title;
-document.title = `${currentPageTitle} | ${sitename}`;
-let gamesData = []; 
+document.getElementById("openSettings").addEventListener("click", () => settingsDialog.showModal());
+themeSelect.addEventListener("change", (event) => saveTheme(event.target.value));
+settingsDialog.addEventListener("click", (event) => {
+  if (event.target === settingsDialog) settingsDialog.close();
+});
 
-function displayFilteredGames(filteredGames) {
-  const gamesContainer = document.getElementById("gamesContainer");
-  gamesContainer.innerHTML = ""; 
+function gameHref(game) {
+  const params = new URLSearchParams({ gameurl: game.url, name: game.name });
+  return `play.html?${params.toString()}`;
+}
+
+function renderFeatured(game) {
+  if (!game) return;
+  const image = document.getElementById("featuredImage");
+  image.src = `${gameServer}/${game.url}/${game.image}`;
+  image.alt = `Carátula de ${game.name}`;
+  document.getElementById("featuredName").textContent = game.name;
+  document.getElementById("featuredCard").href = gameHref(game);
+  document.getElementById("featuredCard").setAttribute("aria-label", `Jugar ${game.name}`);
+  document.getElementById("featuredLink").href = gameHref(game);
+  document.getElementById("featuredButtonText").textContent = `Jugar ${game.name}`;
+}
+
+function renderGames() {
+  const query = searchInput.value.trim().toLocaleLowerCase("es");
+  const filteredGames = gamesData.filter((game) => {
+    const matchesQuery = game.name.toLocaleLowerCase("es").includes(query);
+    const matchesFilter = activeFilter === "all" || game.new === true;
+    return matchesQuery && matchesFilter;
+  });
+
+  gamesContainer.replaceChildren();
+  const fragment = document.createDocumentFragment();
 
   filteredGames.forEach((game) => {
-    const gameDiv = document.createElement("div");
-    gameDiv.classList.add("game");
+    const link = document.createElement("a");
+    link.className = "game-card";
+    link.href = gameHref(game);
+    link.setAttribute("aria-label", `Jugar ${game.name}`);
 
-    const gameImage = document.createElement("img");
-    gameImage.src = `${serverUrl1}/${game.url}/${game.image}`;
-    gameImage.alt = game.name;
-    gameImage.onclick = () => {
-      window.location.href = `play.html?gameurl=${game.url}/`;
+    const cover = document.createElement("div");
+    cover.className = "game-cover";
+    const image = document.createElement("img");
+    image.src = `${gameServer}/${game.url}/${game.image}`;
+    image.alt = `Carátula de ${game.name}`;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.onerror = () => {
+      image.hidden = true;
+      cover.classList.add("cover-unavailable");
+      cover.dataset.initial = game.name.slice(0, 1).toUpperCase();
     };
+    cover.append(image);
 
-    const gameName = document.createElement("p");
-    gameName.textContent = game.name;
-
-    gameDiv.appendChild(gameImage);
-    gameDiv.appendChild(gameName);
-    gamesContainer.appendChild(gameDiv);
+    const details = document.createElement("span");
+    details.className = "game-details";
+    const name = document.createElement("strong");
+    name.className = "game-name";
+    name.textContent = game.name;
+    const playLabel = document.createElement("span");
+    playLabel.className = "game-play-label";
+    playLabel.textContent = "Jugar ↗";
+    details.append(name, playLabel);
+    link.append(cover, details);
+    fragment.append(link);
   });
+
+  gamesContainer.append(fragment);
+  catalogCount.textContent = `${filteredGames.length} ${filteredGames.length === 1 ? "juego" : "juegos"}`;
+  emptyState.hidden = filteredGames.length !== 0;
+  gamesContainer.setAttribute("aria-busy", "false");
 }
 
+searchInput.addEventListener("input", renderGames);
+filterTabs.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-filter]");
+  if (!button) return;
+  activeFilter = button.dataset.filter;
+  filterTabs.querySelectorAll("[data-filter]").forEach((tab) => {
+    const selected = tab === button;
+    tab.classList.toggle("is-active", selected);
+    tab.setAttribute("aria-pressed", String(selected));
+  });
+  renderGames();
+});
 
-function handleSearchInput() {
-  const searchInputValue = document
-    .getElementById("searchInput")
-    .value.toLowerCase();
-  const filteredGames = gamesData.filter((game) =>
-    game.name.toLowerCase().includes(searchInputValue)
-  );
-  displayFilteredGames(filteredGames);
-}
-
-
-fetch("./config/games.json") 
-  .then((response) => response.json())
+fetch("./config/games.json")
+  .then((response) => {
+    if (!response.ok) throw new Error(`No se pudo cargar el catálogo (${response.status}).`);
+    return response.json();
+  })
   .then((data) => {
     gamesData = data;
-    displayFilteredGames(data); 
+    const featured = gamesData.find((game) => game.new) || gamesData[0];
+    renderFeatured(featured);
+    document.getElementById("gameCount").textContent = `${gamesData.length.toLocaleString("es")} juegos disponibles`;
+    if (!gamesData.some((game) => game.new)) {
+      filterTabs.querySelector('[data-filter="new"]').hidden = true;
+    }
+    renderGames();
   })
-  .catch((error) => console.error("Error fetching games:", error));
-
-
-document
-  .getElementById("searchInput")
-  .addEventListener("input", handleSearchInput);
-
-document.getElementById("title").innerHTML = `${sitename}`;
-
-document.getElementById("subtitle").innerHTML = `${subtext}`
-
+  .catch((error) => {
+    gamesContainer.setAttribute("aria-busy", "false");
+    emptyState.hidden = false;
+    emptyState.textContent = "No pudimos cargar el catálogo. Recarga la página para volver a intentarlo.";
+    console.error("No se pudo cargar el catálogo de juegos:", error);
+  });
