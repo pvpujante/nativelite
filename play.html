@@ -1,39 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
-
-    <script src="config/main.js" type="module"></script>
+    <meta name="theme-color" content="#101820" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Juego — letbethub</title>
+    <link rel="stylesheet" href="config/main.css" />
+    <script>
+      try {
+        const preferences = JSON.parse(localStorage.getItem("letbethub-preferences-v1") || "{}");
+        document.documentElement.dataset.theme = preferences.theme || "dark";
+      } catch {
+        document.documentElement.dataset.theme = "dark";
+      }
+    </script>
     <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-
-      iframe {
-        width: 100%;
-        height: 100vh;
-        border: none;
-      }
+      body { min-height: 100vh; display: flex; flex-direction: column; }
+      .game-topbar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 68px; padding: 12px clamp(16px, 4vw, 52px); border-bottom: 1px solid var(--line); background: var(--bg); }
+      .game-topbar .brand { font-size: 17px; }
+      .game-heading { min-width: 0; margin: 0 auto 0 16px; overflow: hidden; color: var(--muted); font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .exit-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; padding: 0 15px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--text); cursor: pointer; font-size: 12px; font-weight: 700; transition: background .18s ease, border-color .18s ease; }
+      .exit-button:hover { border-color: var(--accent); background: var(--surface-raised); }
+      .exit-button span:first-child { color: var(--accent); font-size: 17px; line-height: 1; }
+      .game-stage { display: grid; flex: 1; min-height: 0; padding: 14px clamp(10px, 2vw, 24px) 20px; }
+      .game-frame { width: 100%; height: 100%; min-height: 420px; border: 1px solid var(--line); border-radius: 14px; background: #080d10; }
+      @media (max-width: 520px) { .game-topbar { min-height: 60px; padding: 10px 14px; gap: 9px; } .game-topbar .brand { gap: 7px; font-size: 15px; } .game-topbar .brand-mark { width: 28px; height: 28px; } .game-heading { margin-left: 3px; font-size: 11px; } .exit-button { min-height: 37px; padding: 0 10px; font-size: 11px; } .exit-button span:last-child { display: none; } .game-stage { padding: 8px; } .game-frame { min-height: 350px; border-radius: 9px; } }
     </style>
   </head>
   <body>
-    <iframe id="gameFrame"></iframe>
-
+    <header class="game-topbar">
+      <a class="brand" href="/" aria-label="Volver al inicio de letbethub"><span class="brand-mark" aria-hidden="true">l<span>h</span></span><span>letbet<span class="brand-accent">hub</span></span></a>
+      <h1 class="game-heading" id="gameName">Cargando juego…</h1>
+      <button class="exit-button" id="exitGame" type="button"><span aria-hidden="true">←</span><span>Salir del juego</span></button>
+    </header>
+    <main class="game-stage">
+      <iframe class="game-frame" id="gameFrame" title="Juego" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
+    </main>
     <script>
-      var serverUrl1 = "https://gms.parcoil.com";
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      const gameUrl = urlParams.get("gameurl");
+      const gameServer = "https://gms.parcoil.com";
+      const parameters = new URLSearchParams(window.location.search);
+      const gameUrl = parameters.get("gameurl");
+      const gameName = parameters.get("name") || "Juego";
+      const frame = document.getElementById("gameFrame");
+      document.title = `${gameName} — letbethub`;
+      document.getElementById("gameName").textContent = gameName;
+      frame.title = gameName;
+      document.getElementById("exitGame").addEventListener("click", () => {
+        window.location.assign("/");
+      });
 
-      if (!gameUrl) {
-        alert("Game URL not provided!");
-        window.location.href = "/"; // Redirect to homepage if game URL is missing
+      if (gameUrl && /^[a-zA-Z0-9/_-]+$/.test(gameUrl)) {
+        frame.src = `${gameServer}/${gameUrl.replace(/^\/+|\/+$/g, "")}/`;
       } else {
-        const embedUrl = `${serverUrl1}/${gameUrl}`;
-        document.getElementById("gameFrame").src = embedUrl;
+        document.getElementById("gameName").textContent = "No se encontró el juego";
+        frame.remove();
       }
     </script>
   </body>
