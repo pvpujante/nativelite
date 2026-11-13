@@ -2,6 +2,8 @@ import "./custom.js";
 
 const gameServer = "https://gms.parcoil.com";
 const storageKey = "letbethub-preferences-v1";
+const defaultPageTitle = "letbethub — juegos para jugar";
+const pageIcon = document.querySelector('link[rel="icon"]');
 const gamesContainer = document.getElementById("gamesContainer");
 const searchInput = document.getElementById("searchInput");
 const emptyState = document.getElementById("emptyState");
@@ -43,6 +45,8 @@ function saveTheme(theme) {
 
 function applyGoogleMode(enabled) {
   document.documentElement.dataset.viewMode = enabled ? "google" : "default";
+  document.title = enabled ? "letbethub · Modo Google" : defaultPageTitle;
+  pageIcon.href = enabled ? "/favicon-mode.svg" : "/favicon.svg";
   googleModeToggle.checked = enabled;
   googleModeToggle.setAttribute("aria-checked", String(enabled));
   googleModeNotice.hidden = !enabled;
@@ -56,8 +60,6 @@ function saveGoogleMode(enabled) {
 const preferences = readPreferences();
 applyTheme(preferences.theme || "dark");
 applyGoogleMode(preferences.googleMode === true);
-
-document.title = "letbethub — juegos para jugar";
 
 document.getElementById("openSettings").addEventListener("click", () => settingsDialog.showModal());
 themeSelect.addEventListener("change", (event) => saveTheme(event.target.value));
