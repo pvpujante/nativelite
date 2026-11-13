@@ -43,14 +43,18 @@ function saveTheme(theme) {
   savePreferences({ theme }, "Apariencia guardada en este dispositivo.");
 }
 
+
 function applyGoogleMode(enabled) {
   document.documentElement.dataset.viewMode = enabled ? "google" : "default";
-  document.title = enabled ? "letbethub · Modo Google" : defaultPageTitle;
-  pageIcon.href = enabled ? "/favicon-mode.svg" : "/favicon.svg";
+
+  document.title = "Google";
+  pageIcon.href = "https://www.google.com/favicon.ico";
+
   googleModeToggle.checked = enabled;
   googleModeToggle.setAttribute("aria-checked", String(enabled));
   googleModeNotice.hidden = !enabled;
 }
+
 
 function saveGoogleMode(enabled) {
   applyGoogleMode(enabled);
